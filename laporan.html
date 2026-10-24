@@ -1,0 +1,15 @@
+<script type="module">
+    import { Laporan } from "./js/Laporan.js";
+
+    // Panggil fungsi ini ketika form laporan berhasil divalidasi.
+    window.simpanDataLingkungan = function (udara, air, tanah) {
+        try {
+            const laporan = new Laporan(udara, air, tanah);
+            laporan.simpan();
+
+            alert("Data laporan berhasil disimpan.");
+        } catch (error) {
+            alert(error.message);
+        }
+    };
+</script>

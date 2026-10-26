@@ -1,12 +1,16 @@
+// App mengatur state bersama dan menentukan halaman yang sedang ditampilkan.
+// App adalah komponen utama yang menghubungkan navigasi dan halaman.
+// Halaman laporan disimpan di localStorage supaya tetap ada setelah browser dimuat ulang.
 import { useState } from 'react';
-import Navbar from './components/NavBar';
+import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Dashboard from './pages/Dashboard';
 import Fasilitas from './pages/Fasilitas';
-import Pemantauan from './pages/Pemantauan';
+import Pemantauan from './pages/pemantauan';
 import Laporan from './pages/Laporan';
 import { fasilitas, pemantauan, laporanAwal } from './data/data';
 
+// Ambil laporan dari browser. Kalau belum ada, gunakan data awal.
 function ambilLaporan() {
   const dataTersimpan = localStorage.getItem('nucleo-laporan');
 
@@ -21,13 +25,13 @@ export default function App() {
   const [halaman, setHalaman] = useState('Dashboard');
   const [laporan, setLaporan] = useState(ambilLaporan);
 
-  
+  // Simpan laporan baru ke state dan localStorage.
   function simpanLaporan(laporanBaru) {
     setLaporan(laporanBaru);
     localStorage.setItem('nucleo-laporan', JSON.stringify(laporanBaru));
   }
 
-  
+  // Tampilkan halaman sesuai menu yang dipilih.
   function tampilkanHalaman() {
     if (halaman === 'Data Fasilitas') {
       return <Fasilitas fasilitas={fasilitas} />;
@@ -67,3 +71,6 @@ export default function App() {
     </div>
   );
 }
+
+
+

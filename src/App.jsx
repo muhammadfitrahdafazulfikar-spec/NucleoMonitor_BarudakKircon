@@ -1,3 +1,6 @@
+// App mengatur state bersama dan menentukan halaman yang sedang ditampilkan.
+// App adalah komponen utama yang menghubungkan navigasi dan halaman.
+// Halaman laporan disimpan di localStorage supaya tetap ada setelah browser dimuat ulang.
 import { useState } from 'react';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -68,4 +71,6 @@ export default function App() {
     </div>
   );
 }
+
+
 

@@ -1,3 +1,15 @@
+// Halaman pemantauan mengubah angka laporan menjadi status simulasi.
+import { useState } from 'react';
+import PageTitle from '../components/PageTitle';
+import Tabel from '../components/Tabel';
+
+const gambar = [
+  { jenis: 'Udara', file: 'udaraPemantauan.jpg' },
+  { jenis: 'Air', file: 'airPemantauan.jpg' },
+  { jenis: 'Tanah', file: 'tanahpemantauan.jpg' },
+];
+
+// Ambang berikut hanya contoh untuk latihan, bukan standar resmi.
 const aturanStatus = [
   {
     kunci: 'pm25', nama: 'PM2.5 Udara', satuan: 'µg/m³', ambang: 'Aman ≤ 15; waspada ≤ 35; di atasnya bahaya',
@@ -14,6 +26,7 @@ const aturanStatus = [
 ];
 
 function ambilNilaiTerbaru(laporan, kunci) {
+  // Cari dari laporan paling baru ke paling lama, lalu ambil angka pertama yang tersedia.
   const laporanTerbaru = [...laporan].reverse();
   const laporanDenganNilai = laporanTerbaru.find((item) => {
     return item.pengukuran && item.pengukuran[kunci] !== '' && item.pengukuran[kunci] !== undefined;
@@ -31,14 +44,20 @@ function warnaStatus(status) {
 
 export default function Pemantauan({ pemantauan, laporan = [] }) {
   const [filter, setFilter] = useState('Semua');
+
+  // Filter tabel pemantauan yang sudah ada.
   const dataTampil = pemantauan.filter((item) => filter === 'Semua' || item.jenis === filter);
   const barisTabel = dataTampil.map((item, index) => [
     index + 1, item.id, item.jenis, item.parameter, item.nilai, item.aktivitas,
   ]);
+
+  // Baca angka mentah dari laporan, lalu beri status menggunakan aturan di atas.
   const hasilMatriks = aturanStatus.map((aturan) => {
     const nilai = ambilNilaiTerbaru(laporan, aturan.kunci);
     return { ...aturan, nilai, status: nilai === null || Number.isNaN(nilai) ? 'Belum ada data' : aturan.nilaiStatus(nilai) };
   });
+
+  // Status ringkasan mengikuti status tertinggi dari semua parameter yang tersedia.
   const urutanStatus = ['Aman', 'Waspada', 'Bahaya'];
   const statusTersedia = hasilMatriks.map((item) => item.status).filter((status) => urutanStatus.includes(status));
   const statusUmum = statusTersedia.length

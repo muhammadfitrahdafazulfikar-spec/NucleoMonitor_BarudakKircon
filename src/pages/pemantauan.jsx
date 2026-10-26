@@ -1,13 +1,3 @@
-import { useState } from 'react';
-import PageTitle from '../components/PageTitle';
-import Tabel from '../components/Tabel';
-
-const gambar = [
-  { jenis: 'Udara', file: 'udaraPemantauan.jpg' },
-  { jenis: 'Air', file: 'airPemantauan.jpg' },
-  { jenis: 'Tanah', file: 'tanahpemantauan.jpg' },
-];
-
 const aturanStatus = [
   {
     kunci: 'pm25', nama: 'PM2.5 Udara', satuan: 'µg/m³', ambang: 'Aman ≤ 15; waspada ≤ 35; di atasnya bahaya',
@@ -41,12 +31,10 @@ function warnaStatus(status) {
 
 export default function Pemantauan({ pemantauan, laporan = [] }) {
   const [filter, setFilter] = useState('Semua');
-
   const dataTampil = pemantauan.filter((item) => filter === 'Semua' || item.jenis === filter);
   const barisTabel = dataTampil.map((item, index) => [
     index + 1, item.id, item.jenis, item.parameter, item.nilai, item.aktivitas,
   ]);
-
   const hasilMatriks = aturanStatus.map((aturan) => {
     const nilai = ambilNilaiTerbaru(laporan, aturan.kunci);
     return { ...aturan, nilai, status: nilai === null || Number.isNaN(nilai) ? 'Belum ada data' : aturan.nilaiStatus(nilai) };

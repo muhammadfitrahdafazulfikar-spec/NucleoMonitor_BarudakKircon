@@ -1,0 +1,69 @@
+import { useState } from 'react';
+import Navbar from './components/NavBar';
+import Footer from './components/Footer';
+import Dashboard from './pages/Dashboard';
+import Fasilitas from './pages/Fasilitas';
+import Pemantauan from './pages/Pemantauan';
+import Laporan from './pages/Laporan';
+import { fasilitas, pemantauan, laporanAwal } from './data/data';
+
+function ambilLaporan() {
+  const dataTersimpan = localStorage.getItem('nucleo-laporan');
+
+  if (dataTersimpan) {
+    return JSON.parse(dataTersimpan);
+  }
+
+  return laporanAwal;
+}
+
+export default function App() {
+  const [halaman, setHalaman] = useState('Dashboard');
+  const [laporan, setLaporan] = useState(ambilLaporan);
+
+  
+  function simpanLaporan(laporanBaru) {
+    setLaporan(laporanBaru);
+    localStorage.setItem('nucleo-laporan', JSON.stringify(laporanBaru));
+  }
+
+  
+  function tampilkanHalaman() {
+    if (halaman === 'Data Fasilitas') {
+      return <Fasilitas fasilitas={fasilitas} />;
+    }
+
+    if (halaman === 'Pemantauan Lingkungan') {
+      return <Pemantauan pemantauan={pemantauan} laporan={laporan} />;
+    }
+
+    if (halaman === 'Laporan Pemantauan') {
+      return <Laporan laporan={laporan} setLaporan={simpanLaporan} />;
+    }
+
+    return (
+      <Dashboard
+        fasilitas={fasilitas}
+        pemantauan={pemantauan}
+        laporan={laporan}
+        pindahHalaman={setHalaman}
+      />
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-slate-100 text-slate-800">
+      <Navbar halaman={halaman} pindahHalaman={setHalaman} />
+
+      <main className="mx-auto flex max-w-7xl flex-col gap-10 px-5 py-8 md:py-10">
+        {tampilkanHalaman()}
+
+        <p className="rounded border border-amber-300 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
+          <strong>Catatan:</strong> Semua informasi dan angka merupakan data simulasi untuk pembelajaran.
+        </p>
+      </main>
+
+      <Footer />
+    </div>
+  );
+}

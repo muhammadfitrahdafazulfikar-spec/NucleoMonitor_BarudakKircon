@@ -3,7 +3,7 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Dashboard from './pages/Dashboard';
 import Fasilitas from './pages/Fasilitas';
-import Pemantauan from './pages/Pemantauan';
+import Pemantauan from './pages/pemantauan';
 import Laporan from './pages/Laporan';
 import { fasilitas, pemantauan, laporanAwal } from './data/data';
 

@@ -2,7 +2,7 @@
 // App adalah komponen utama yang menghubungkan navigasi dan halaman.
 // Halaman laporan disimpan di localStorage supaya tetap ada setelah browser dimuat ulang.
 import { useState } from 'react';
-import Navbar from './components/Navbar';
+import Navbar from './components/NavBar';
 import Footer from './components/Footer';
 import Dashboard from './pages/Dashboard';
 import Fasilitas from './pages/Fasilitas';
@@ -12,10 +12,15 @@ import { fasilitas, pemantauan, laporanAwal } from './data/data';
 
 // Ambil laporan dari browser. Kalau belum ada, gunakan data awal.
 function ambilLaporan() {
-  const dataTersimpan = localStorage.getItem('nucleo-laporan');
+  try {
+    const dataTersimpan = localStorage.getItem('nucleo-laporan');
 
-  if (dataTersimpan) {
-    return JSON.parse(dataTersimpan);
+    if (dataTersimpan) {
+      const laporanTersimpan = JSON.parse(dataTersimpan);
+      return Array.isArray(laporanTersimpan) ? laporanTersimpan : laporanAwal;
+    }
+  } catch {
+    return laporanAwal;
   }
 
   return laporanAwal;

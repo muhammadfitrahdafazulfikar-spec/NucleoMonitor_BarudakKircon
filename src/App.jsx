@@ -9,6 +9,7 @@ import Fasilitas from './pages/Fasilitas';
 import Pemantauan from './pages/pemantauan';
 import Laporan from './pages/Laporan';
 import { fasilitas, laporanAwal } from './data/data';
+import { urutkanLaporanTerbaru } from './utils/tanggalLaporan';
 
 // Ambil laporan dari browser. Kalau belum ada, gunakan data awal.
 function ambilLaporan() {
@@ -35,9 +36,27 @@ export default function App() {
     phAir: { jenis: 'Air', parameter: 'pH air' },
     phTanah: { jenis: 'Tanah', parameter: 'pH tanah' },
   };
-  const dataDariLaporan = laporan.filter((item) => item.status === 'Ditinjau').flatMap((item) => Object.entries(item.pengukuran ?? {})
-    .filter(([kunci, nilai]) => definisiVariabel[kunci] && nilai !== '' && nilai !== null && nilai !== undefined)
-    .map(([kunci, nilai]) => {
+  const variabelPerKategori = {
+    'Kualitas Udara': 'pm25',
+    'Kualitas Air': 'phAir',
+    'Kualitas Tanah': 'phTanah',
+  };
+  const laporanLingkunganDitinjau = urutkanLaporanTerbaru(
+    laporan.filter((item) => item.status === 'Ditinjau'),
+  );
+  const nilaiTerbaruPerParameter = new Map();
+  laporanLingkunganDitinjau.forEach((item) => {
+    const kunci = variabelPerKategori[item.kategori];
+    const nilai = item.pengukuran?.[kunci];
+    if (kunci && definisiVariabel[kunci] && nilai !== '' && nilai !== null && nilai !== undefined
+      && !nilaiTerbaruPerParameter.has(kunci)) {
+      nilaiTerbaruPerParameter.set(kunci, { laporan: item, nilai });
+    }
+  });
+  const dataDariLaporan = Object.keys(definisiVariabel)
+    .filter((kunci) => nilaiTerbaruPerParameter.has(kunci))
+    .map((kunci) => {
+      const { laporan: item, nilai } = nilaiTerbaruPerParameter.get(kunci);
       const variabel = definisiVariabel[kunci];
       return {
         id: item.id,
@@ -46,10 +65,10 @@ export default function App() {
         nilai,
         aktivitas: item.deskripsi || 'Pengukuran dari laporan',
       };
-    }));
+    });
   const dataPemantauan = dataDariLaporan;
   const fasilitasTerbaru = fasilitas.map((item) => {
-    const laporanTerbaruDitinjau = [...laporan].reverse().find((laporanItem) => (
+    const laporanTerbaruDitinjau = urutkanLaporanTerbaru(laporan).find((laporanItem) => (
       laporanItem.status === 'Ditinjau' && laporanItem.detailFasilitas?.fasilitasId === item.id
     ));
     if (!laporanTerbaruDitinjau) return item;

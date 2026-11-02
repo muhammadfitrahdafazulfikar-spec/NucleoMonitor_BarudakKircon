@@ -3,12 +3,14 @@ import { useState } from 'react';
 import PageTitle from '../components/PageTitle';
 import StatCard from '../components/StatCard';
 import Tabel from '../components/Tabel';
+import { urutkanLaporanTerbaru } from '../utils/tanggalLaporan';
 
 const gayaInput = 'mt-2 block w-full rounded border border-slate-300 px-3 py-3 outline-none focus:border-sky-600';
 
 export default function Laporan({ laporan, setLaporan, fasilitas = [] }) {
   const [formTerbuka, setFormTerbuka] = useState(false);
   const [jenisForm, setJenisForm] = useState('Lingkungan');
+  const [kategoriLingkungan, setKategoriLingkungan] = useState('Kualitas Udara');
   const [pesan, setPesan] = useState('');
   const sudahDitinjau = laporan.filter((item) => item.status === 'Ditinjau').length;
 
@@ -45,19 +47,18 @@ export default function Laporan({ laporan, setLaporan, fasilitas = [] }) {
     let detailFasilitas;
 
     if (jenisForm === 'Lingkungan') {
-      const nilai = {
-        pm25: form.get('pm25'),
-        phAir: form.get('phAir'),
-        phTanah: form.get('phTanah'),
-      };
-      if (!Object.values(nilai).some(Boolean)) {
-        setPesan('Isi setidaknya satu nilai pemantauan lingkungan.');
+      kategori = form.get('kategori');
+      const kunciPengukuran = {
+        'Kualitas Udara': 'pm25',
+        'Kualitas Air': 'phAir',
+        'Kualitas Tanah': 'phTanah',
+      }[kategori];
+      const nilai = form.get(kunciPengukuran);
+      if (!nilai) {
+        setPesan(`Isi nilai untuk kategori ${kategori.toLowerCase()}.`);
         return;
       }
-      Object.entries(nilai).forEach(([kunci, angka]) => {
-        if (angka) pengukuran[kunci] = Number(angka);
-      });
-      kategori = form.get('kategori');
+      pengukuran[kunciPengukuran] = Number(nilai);
     } else {
       const fasilitasTerpilih = fasilitas.find((item) => item.id === form.get('fasilitasId'));
       kategori = 'Laporan Fasilitas';
@@ -70,11 +71,13 @@ export default function Laporan({ laporan, setLaporan, fasilitas = [] }) {
       };
     }
 
-    const tanggal = new Date(`${form.get('tanggal')}T00:00:00`);
+    const tanggalISO = form.get('tanggal');
+    const tanggal = new Date(`${tanggalISO}T00:00:00`);
     const laporanBaru = {
       id: idBaru,
       jenisLaporan: jenisForm,
       kategori,
+      tanggalISO,
       tanggal: tanggal.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
       status: form.get('status'),
       deskripsi: form.get('deskripsi').trim(),
@@ -88,8 +91,12 @@ export default function Laporan({ laporan, setLaporan, fasilitas = [] }) {
     setFormTerbuka(false);
   }
 
-  const laporanFasilitas = laporan.filter((item) => item.jenisLaporan === 'Fasilitas' || item.detailFasilitas);
-  const laporanLingkungan = laporan.filter((item) => item.jenisLaporan !== 'Fasilitas' && !item.detailFasilitas);
+  const laporanFasilitas = urutkanLaporanTerbaru(
+    laporan.filter((item) => item.jenisLaporan === 'Fasilitas' || item.detailFasilitas),
+  );
+  const laporanLingkungan = urutkanLaporanTerbaru(
+    laporan.filter((item) => item.jenisLaporan !== 'Fasilitas' && !item.detailFasilitas),
+  );
 
   const barisLingkungan = laporanLingkungan.map((item) => [
     item.id,
@@ -162,17 +169,23 @@ export default function Laporan({ laporan, setLaporan, fasilitas = [] }) {
               {jenisForm === 'Lingkungan' ? (
                 <>
                   <label className="font-semibold">Kategori Lingkungan
-                    <select className={gayaInput} name="kategori" required defaultValue="Kualitas Udara">
-                      <option>Kualitas Udara</option><option>Kualitas Air</option><option>Kualitas Tanah</option><option>Lainnya</option>
+                    <select
+                      className={gayaInput}
+                      name="kategori"
+                      required
+                      value={kategoriLingkungan}
+                      onChange={(event) => setKategoriLingkungan(event.target.value)}
+                    >
+                      <option>Kualitas Udara</option><option>Kualitas Air</option><option>Kualitas Tanah</option>
                     </select>
                   </label>
                   <div className="rounded border border-slate-200 p-4 md:col-span-2">
                     <h3 className="font-bold text-blue-950">Nilai mentah lingkungan</h3>
-                    <p className="mt-1 text-sm text-slate-600">Isi satu atau beberapa nilai. Untuk perhitungan ISPU, nilai PM2.5 perlu berupa rata-rata 24 jam. Deskripsi laporan menjadi aktivitas pada data pemantauan.</p>
+                    <p className="mt-1 text-sm text-slate-600">Isi nilai sesuai kategori yang dipilih. Untuk perhitungan ISPU, nilai PM2.5 perlu berupa rata-rata 24 jam. Deskripsi laporan menjadi aktivitas pada data pemantauan.</p>
                     <div className="mt-4 grid gap-4 md:grid-cols-3">
-                      <label className="text-sm font-semibold">PM2.5 udara, rata-rata 24 jam (µg/m³)<input className={gayaInput} name="pm25" type="number" min="0" step="any" placeholder="Contoh: 12" /></label>
-                      <label className="text-sm font-semibold">pH air<input className={gayaInput} name="phAir" type="number" min="0" max="14" step="any" placeholder="Contoh: 7.2" /></label>
-                      <label className="text-sm font-semibold">pH tanah<input className={gayaInput} name="phTanah" type="number" min="0" max="14" step="any" placeholder="Contoh: 6.5" /></label>
+                      {kategoriLingkungan === 'Kualitas Udara' && <label className="text-sm font-semibold">PM2.5 udara, rata-rata 24 jam (µg/m³)<input className={gayaInput} name="pm25" type="number" min="0" step="any" required placeholder="Contoh: 12" /></label>}
+                      {kategoriLingkungan === 'Kualitas Air' && <label className="text-sm font-semibold">pH air<input className={gayaInput} name="phAir" type="number" min="0" max="14" step="any" required placeholder="Contoh: 7.2" /></label>}
+                      {kategoriLingkungan === 'Kualitas Tanah' && <label className="text-sm font-semibold">pH tanah<input className={gayaInput} name="phTanah" type="number" min="0" max="14" step="any" required placeholder="Contoh: 6.5" /></label>}
                     </div>
                   </div>
                 </>

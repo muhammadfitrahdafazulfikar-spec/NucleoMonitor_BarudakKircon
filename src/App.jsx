@@ -31,19 +31,19 @@ export default function App() {
   const [laporan, setLaporan] = useState(ambilLaporan);
 
   const definisiVariabel = {
-    pm25: { jenis: 'Udara', parameter: 'PM2.5', satuan: 'µg/m³' },
-    phAir: { jenis: 'Air', parameter: 'pH air', satuan: '' },
-    phTanah: { jenis: 'Tanah', parameter: 'pH tanah', satuan: '' },
+    pm25: { jenis: 'Udara', parameter: 'PM2.5' },
+    phAir: { jenis: 'Air', parameter: 'pH air' },
+    phTanah: { jenis: 'Tanah', parameter: 'pH tanah' },
   };
   const dataDariLaporan = laporan.filter((item) => item.status === 'Ditinjau').flatMap((item) => Object.entries(item.pengukuran ?? {})
     .filter(([kunci, nilai]) => definisiVariabel[kunci] && nilai !== '' && nilai !== null && nilai !== undefined)
     .map(([kunci, nilai]) => {
       const variabel = definisiVariabel[kunci];
       return {
-        id: `${item.id}-${kunci}`,
+        id: item.id,
         jenis: variabel.jenis,
         parameter: variabel.parameter,
-        nilai: `${nilai}${variabel.satuan ? ` ${variabel.satuan}` : ''}`,
+        nilai,
         aktivitas: item.deskripsi || 'Pengukuran dari laporan',
       };
     }));

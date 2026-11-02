@@ -105,7 +105,7 @@ export default function App() {
   // Tampilkan halaman sesuai menu yang dipilih.
   function tampilkanHalaman() {
     if (halaman === 'Data Fasilitas') {
-      return <Fasilitas fasilitas={fasilitasDitinjau} />;
+      return <Fasilitas fasilitas={fasilitasTerbaru} fasilitasDitinjau={fasilitasDitinjau} />;
     }
 
     if (halaman === 'Pemantauan Lingkungan') {

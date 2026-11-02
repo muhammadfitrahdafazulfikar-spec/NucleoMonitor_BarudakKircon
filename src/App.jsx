@@ -8,7 +8,7 @@ import Dashboard from './pages/Dashboard';
 import Fasilitas from './pages/Fasilitas';
 import Pemantauan from './pages/pemantauan';
 import Laporan from './pages/Laporan';
-import { fasilitas, pemantauan, laporanAwal } from './data/data';
+import { fasilitas, laporanAwal } from './data/data';
 
 // Ambil laporan dari browser. Kalau belum ada, gunakan data awal.
 function ambilLaporan() {
@@ -30,6 +30,43 @@ export default function App() {
   const [halaman, setHalaman] = useState('Dashboard');
   const [laporan, setLaporan] = useState(ambilLaporan);
 
+  const definisiVariabel = {
+    pm25: { jenis: 'Udara', parameter: 'PM2.5', satuan: 'µg/m³' },
+    phAir: { jenis: 'Air', parameter: 'pH air', satuan: '' },
+    phTanah: { jenis: 'Tanah', parameter: 'pH tanah', satuan: '' },
+  };
+  const dataDariLaporan = laporan.filter((item) => item.status === 'Ditinjau').flatMap((item) => Object.entries(item.pengukuran ?? {})
+    .filter(([kunci, nilai]) => definisiVariabel[kunci] && nilai !== '' && nilai !== null && nilai !== undefined)
+    .map(([kunci, nilai]) => {
+      const variabel = definisiVariabel[kunci];
+      return {
+        id: `${item.id}-${kunci}`,
+        jenis: variabel.jenis,
+        parameter: variabel.parameter,
+        nilai: `${nilai}${variabel.satuan ? ` ${variabel.satuan}` : ''}`,
+        aktivitas: item.deskripsi || 'Pengukuran dari laporan',
+      };
+    }));
+  const dataPemantauan = dataDariLaporan;
+  const fasilitasTerbaru = fasilitas.map((item) => {
+    const laporanTerbaruDitinjau = [...laporan].reverse().find((laporanItem) => (
+      laporanItem.status === 'Ditinjau' && laporanItem.detailFasilitas?.fasilitasId === item.id
+    ));
+    if (!laporanTerbaruDitinjau) return item;
+
+    const detail = laporanTerbaruDitinjau.detailFasilitas;
+    return {
+      ...item,
+      status: detail.statusOperasional || item.status,
+      kapasitas: detail.dayaKeluaran != null ? `${detail.dayaKeluaran} MW` : item.kapasitas,
+      suhuPendingin: detail.suhuPendingin ?? item.suhuPendingin,
+      waktuPembaruan: laporanTerbaruDitinjau.tanggal,
+      deskripsiPembaruan: laporanTerbaruDitinjau.deskripsi,
+      laporanDitinjau: true,
+    };
+  });
+  const fasilitasDitinjau = fasilitasTerbaru.filter((item) => item.laporanDitinjau);
+
   // Simpan laporan baru ke state dan localStorage.
   function simpanLaporan(laporanBaru) {
     setLaporan(laporanBaru);
@@ -39,21 +76,21 @@ export default function App() {
   // Tampilkan halaman sesuai menu yang dipilih.
   function tampilkanHalaman() {
     if (halaman === 'Data Fasilitas') {
-      return <Fasilitas fasilitas={fasilitas} />;
+      return <Fasilitas fasilitas={fasilitasDitinjau} />;
     }
 
     if (halaman === 'Pemantauan Lingkungan') {
-      return <Pemantauan pemantauan={pemantauan} laporan={laporan} />;
+      return <Pemantauan pemantauan={dataPemantauan} laporan={laporan} />;
     }
 
     if (halaman === 'Laporan Pemantauan') {
-      return <Laporan laporan={laporan} setLaporan={simpanLaporan} />;
+      return <Laporan laporan={laporan} setLaporan={simpanLaporan} fasilitas={fasilitas} />;
     }
 
     return (
       <Dashboard
-        fasilitas={fasilitas}
-        pemantauan={pemantauan}
+        fasilitas={fasilitasDitinjau}
+        pemantauan={dataPemantauan}
         laporan={laporan}
         pindahHalaman={setHalaman}
       />

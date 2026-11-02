@@ -15,7 +15,7 @@ export default function Fasilitas({ fasilitas = [] }) {
         <table className="w-full border-collapse text-left">
           <thead className="bg-blue-950 text-white">
             <tr>
-              {['No.', 'ID Fasilitas', 'Nama', 'Lokasi', 'Kapasitas', 'Status'].map((judul) => (
+              {['No.', 'ID Fasilitas', 'Nama', 'Lokasi', 'Daya Keluaran', 'Suhu Pendingin', 'Status Operasional', 'Status Tinjauan', 'Pembaruan Terakhir'].map((judul) => (
                 <th className="whitespace-nowrap px-4 py-3" key={judul}>{judul}</th>
               ))}
             </tr>
@@ -28,12 +28,15 @@ export default function Fasilitas({ fasilitas = [] }) {
                 <td className="px-4 py-3">{item.nama}</td>
                 <td className="px-4 py-3">{item.lokasi}</td>
                 <td className="px-4 py-3">{item.kapasitas}</td>
+                <td className="px-4 py-3">{item.suhuPendingin != null ? `${item.suhuPendingin} °C` : '—'}</td>
                 <td className="px-4 py-3">{item.status}</td>
+                <td className="px-4 py-3">Ditinjau</td>
+                <td className="px-4 py-3">{item.deskripsiPembaruan || item.waktuPembaruan || '—'}</td>
               </tr>
             )) : (
               <tr>
-                <td className="px-4 py-5 text-center text-slate-600" colSpan={6}>
-                  Belum ada data fasilitas.
+                <td className="px-4 py-5 text-center text-slate-600" colSpan={9}>
+                  Belum ada laporan fasilitas yang ditinjau.
                 </td>
               </tr>
             )}
@@ -47,8 +50,10 @@ export default function Fasilitas({ fasilitas = [] }) {
             <p className="text-sm font-semibold text-sky-700">{item.id}</p>
             <h2 className="mt-2 text-xl font-bold text-blue-950">{item.nama}</h2>
             <p className="mt-3 text-slate-600">Lokasi: {item.lokasi}</p>
-            <p className="mt-1 text-slate-600">Kapasitas: {item.kapasitas}</p>
+            <p className="mt-1 text-slate-600">Daya keluaran: {item.kapasitas}</p>
+            <p className="mt-1 text-slate-600">Suhu pendingin: {item.suhuPendingin != null ? `${item.suhuPendingin} °C` : 'Belum dilaporkan'}</p>
             <p className="mt-3 font-semibold text-slate-800">Status: {item.status}</p>
+            {item.deskripsiPembaruan && <p className="mt-2 text-sm text-slate-600">Laporan terakhir: {item.deskripsiPembaruan}</p>}
           </article>
         ))}
       </div>

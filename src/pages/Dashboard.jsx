@@ -6,20 +6,24 @@ export default function Dashboard({ fasilitas, pemantauan, laporan, pindahHalama
   const [kataKunci, setKataKunci] = useState('');
   const [sudahMencari, setSudahMencari] = useState(false);
 
+  // Data pemantauan yang diterima di sini sudah difilter ke laporan yang ditinjau.
+  const variabelTerpantau = new Set(pemantauan.map((item) => item.parameter).filter(Boolean));
+
   // Cari fasilitas berdasarkan nama, ID, atau lokasi.
   const hasilPencarian = fasilitas.filter((item) => {
     const informasi = `${item.nama} ${item.id} ${item.lokasi}`.toLowerCase();
     return informasi.includes(kataKunci.toLowerCase());
   });
 
-  const ringkasanFasilitas = [
-    ['Nama Fasilitas', 'PLTN Edukasi Nusantara'],
-    ['ID Fasilitas', 'SEN-001'],
-    ['Status', 'Beroperasi (simulasi)'],
-    ['Daya Keluaran', '850 MW (simulasi)'],
-    ['Suhu Pendingin', '295 °C (simulasi)'],
-    ['Waktu Pembaruan', '27 September 2026, 20.00 WIB (simulasi)'],
-  ];
+  const ringkasanFasilitas = fasilitas.map((item) => [
+    `${item.nama} (${item.id})`,
+    [
+      `Status: ${item.status}`,
+      `Daya keluaran: ${item.kapasitas}`,
+      `Suhu pendingin: ${item.suhuPendingin != null ? `${item.suhuPendingin} °C` : 'Belum dilaporkan'}`,
+      item.deskripsiPembaruan ? `Laporan terakhir: ${item.deskripsiPembaruan}` : null,
+    ].filter(Boolean).join(' · '),
+  ]);
 
   function cariFasilitas(event) {
     event.preventDefault();
@@ -97,16 +101,17 @@ export default function Dashboard({ fasilitas, pemantauan, laporan, pindahHalama
 
       <section>
         <h2 className="mb-5 text-2xl font-bold text-blue-950">Ringkasan Sistem</h2>
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard judul="Total Fasilitas" nilai={fasilitas.length} />
           <StatCard judul="Data Pemantauan" nilai={pemantauan.length} />
+          <StatCard judul="Variabel Terpantau" nilai={variabelTerpantau.size} />
           <StatCard judul="Total Laporan" nilai={laporan.length} />
         </div>
       </section>
 
       <section>
         <h2 className="mb-5 text-2xl font-bold text-blue-950">Informasi Fasilitas</h2>
-        <Tabel kolom={['Informasi', 'Nilai Simulasi']} data={ringkasanFasilitas} />
+        <Tabel kolom={['Informasi', 'Nilai Terbaru']} data={ringkasanFasilitas} />
       </section>
 
       <section>

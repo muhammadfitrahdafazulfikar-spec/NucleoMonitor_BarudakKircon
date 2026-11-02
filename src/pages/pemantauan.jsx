@@ -1,5 +1,5 @@
 // Halaman pemantauan mengubah angka laporan menjadi status simulasi.
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import PageTitle from '../components/PageTitle';
 import Tabel from '../components/Tabel';
 
@@ -29,7 +29,10 @@ function ambilNilaiTerbaru(laporan, kunci) {
   // Cari dari laporan paling baru ke paling lama, lalu ambil angka pertama yang tersedia.
   const laporanTerbaru = [...laporan].reverse();
   const laporanDenganNilai = laporanTerbaru.find((item) => {
-    return item.pengukuran && item.pengukuran[kunci] !== '' && item.pengukuran[kunci] !== undefined;
+    return item.status === 'Ditinjau'
+      && item.pengukuran
+      && item.pengukuran[kunci] !== ''
+      && item.pengukuran[kunci] !== undefined;
   });
 
   return laporanDenganNilai ? Number(laporanDenganNilai.pengukuran[kunci]) : null;
@@ -44,34 +47,9 @@ function warnaStatus(status) {
 
 export default function Pemantauan({ pemantauan, laporan = [] }) {
   const [filter, setFilter] = useState('Semua');
-  const [dataApi, setDataApi] = useState([]);
-  const [statusApi, setStatusApi] = useState('memuat');
-
-  useEffect(() => {
-    const controller = new AbortController();
-    fetch('https://jsonplaceholder.typicode.com/comments?_limit=5', { signal: controller.signal })
-      .then((response) => {
-        if (!response.ok) throw new Error('Permintaan data pemantauan gagal.');
-        return response.json();
-      })
-      .then((comments) => {
-        setDataApi(comments.map((comment, index) => ({
-          id: `API-${String(comment.id).padStart(3, '0')}`,
-          jenis: ['Udara', 'Air', 'Tanah'][index % 3],
-          parameter: ['PM2.5', 'pH air', 'pH tanah'][index % 3],
-          nilai: 'Data contoh',
-          aktivitas: comment.name,
-        })));
-        setStatusApi('selesai');
-      })
-      .catch((error) => {
-        if (error.name !== 'AbortError') setStatusApi('gagal');
-      });
-    return () => controller.abort();
-  }, []);
 
   // Filter tabel pemantauan yang sudah ada.
-  const dataTampil = [...dataApi, ...pemantauan].filter((item) => filter === 'Semua' || item.jenis === filter);
+  const dataTampil = pemantauan.filter((item) => filter === 'Semua' || item.jenis === filter);
   const barisTabel = dataTampil.map((item, index) => [
     index + 1, item.id, item.jenis, item.parameter, item.nilai, item.aktivitas,
   ]);
@@ -111,6 +89,7 @@ export default function Pemantauan({ pemantauan, laporan = [] }) {
           <table className="w-full border-collapse text-left">
             <thead className="bg-blue-950 text-white">
               <tr>
+                <th className="px-4 py-3">ID</th>
                 <th className="px-4 py-3">Parameter</th>
                 <th className="px-4 py-3">Nilai Terbaru</th>
                 <th className="px-4 py-3">Aturan Simulasi</th>
@@ -131,6 +110,15 @@ export default function Pemantauan({ pemantauan, laporan = [] }) {
         </div>
         <p className="mt-4 text-xs text-slate-500">Ambang pada tabel adalah angka contoh untuk proyek pembelajaran, bukan standar lingkungan atau standar keselamatan PLTN.</p>
       </section>
+      
+            <section className="grid gap-5 md:grid-cols-3">
+        {gambar.map((item) => (
+          <article className="overflow-hidden border border-slate-200 bg-white" key={item.jenis}>
+            <img className="h-48 w-full object-cover" src={`/assets/${item.file}`} alt={`Pemantauan ${item.jenis}`} />
+            <div className="p-5"><h3 className="text-xl font-bold text-blue-950">Kualitas {item.jenis}</h3></div>
+          </article>
+        ))}
+      </section>
 
       <section>
         <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
@@ -142,19 +130,10 @@ export default function Pemantauan({ pemantauan, laporan = [] }) {
             </select>
           </label>
         </div>
-        {statusApi === 'memuat' && <p className="mb-3 text-sm text-slate-600" role="status">Memuat data contoh dari JSONPlaceholder…</p>}
-        {statusApi === 'gagal' && <p className="mb-3 text-sm text-amber-800" role="status">Data JSONPlaceholder tidak dapat dimuat. Data pemantauan lokal tetap ditampilkan.</p>}
         <Tabel kolom={['No.', 'ID Data', 'Jenis', 'Parameter', 'Nilai', 'Aktivitas']} data={barisTabel} />
       </section>
 
-      <section className="grid gap-5 md:grid-cols-3">
-        {gambar.map((item) => (
-          <article className="overflow-hidden border border-slate-200 bg-white" key={item.jenis}>
-            <img className="h-48 w-full object-cover" src={`/assets/${item.file}`} alt={`Pemantauan ${item.jenis}`} />
-            <div className="p-5"><h3 className="text-xl font-bold text-blue-950">Kualitas {item.jenis}</h3></div>
-          </article>
-        ))}
-      </section>
+
     </>
   );
 }

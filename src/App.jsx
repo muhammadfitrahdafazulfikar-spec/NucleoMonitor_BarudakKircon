@@ -11,20 +11,27 @@ import Laporan from './pages/Laporan';
 import { fasilitas, laporanAwal } from './data/data';
 import { urutkanLaporanTerbaru } from './utils/tanggalLaporan';
 
+const kunciLaporan = 'nucleo-laporan';
+const kunciLaporanFasilitas = 'nucleo-laporan-fasilitas';
+
+function bacaArrayLocalStorage(kunci) {
+  try {
+    const tersimpan = localStorage.getItem(kunci);
+    if (!tersimpan) return null;
+    const data = JSON.parse(tersimpan);
+    return Array.isArray(data) ? data : null;
+  } catch {
+    return null;
+  }
+}
+
 // Ambil laporan dari browser. Kalau belum ada, gunakan data awal.
 function ambilLaporan() {
-  try {
-    const dataTersimpan = localStorage.getItem('nucleo-laporan');
-
-    if (dataTersimpan) {
-      const laporanTersimpan = JSON.parse(dataTersimpan);
-      return Array.isArray(laporanTersimpan) ? laporanTersimpan : laporanAwal;
-    }
-  } catch {
-    return laporanAwal;
-  }
-
-  return laporanAwal;
+  const laporanUtama = bacaArrayLocalStorage(kunciLaporan) ?? laporanAwal;
+  const laporanFasilitasTersimpan = bacaArrayLocalStorage(kunciLaporanFasilitas) ?? [];
+  const semuaLaporan = new Map(laporanUtama.map((item) => [item.id, item]));
+  laporanFasilitasTersimpan.forEach((item) => semuaLaporan.set(item.id, item));
+  return [...semuaLaporan.values()];
 }
 
 export default function App() {
@@ -89,7 +96,10 @@ export default function App() {
   // Simpan laporan baru ke state dan localStorage.
   function simpanLaporan(laporanBaru) {
     setLaporan(laporanBaru);
-    localStorage.setItem('nucleo-laporan', JSON.stringify(laporanBaru));
+    localStorage.setItem(kunciLaporan, JSON.stringify(laporanBaru));
+    localStorage.setItem(kunciLaporanFasilitas, JSON.stringify(
+      laporanBaru.filter((item) => item.jenisLaporan === 'Fasilitas' || item.detailFasilitas),
+    ));
   }
 
   // Tampilkan halaman sesuai menu yang dipilih.

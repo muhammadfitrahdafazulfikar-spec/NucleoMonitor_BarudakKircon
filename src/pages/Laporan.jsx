@@ -12,10 +12,46 @@ export default function Laporan({ laporan, setLaporan, fasilitas = [] }) {
   const [jenisForm, setJenisForm] = useState('Lingkungan');
   const [kategoriLingkungan, setKategoriLingkungan] = useState('Kualitas Udara');
   const [pesan, setPesan] = useState('');
+  const [filterKategoriLingkungan, setFilterKategoriLingkungan] = useState('Semua');
+  const [filterStatusLingkungan, setFilterStatusLingkungan] = useState('Semua');
+  const [filterFasilitas, setFilterFasilitas] = useState('Semua');
+  const [filterStatusFasilitas, setFilterStatusFasilitas] = useState('Semua');
   const sudahDitinjau = laporan.filter((item) => item.status === 'Ditinjau').length;
 
   function ubahStatusTinjauan(id, status) {
     setLaporan(laporan.map((item) => item.id === id ? { ...item, status } : item));
+  }
+
+  function hapusLaporan(id) {
+    setLaporan(laporan.filter((item) => item.id !== id));
+    setPesan(`Laporan ${id} berhasil dihapus.`);
+  }
+
+  function resetTabelLingkungan() {
+    setLaporan(laporan.filter((item) => item.jenisLaporan === 'Fasilitas' || item.detailFasilitas));
+    setFilterKategoriLingkungan('Semua');
+    setFilterStatusLingkungan('Semua');
+    setPesan('Seluruh isi tabel laporan lingkungan berhasil direset.');
+  }
+
+  function resetTabelFasilitas() {
+    setLaporan(laporan.filter((item) => item.jenisLaporan !== 'Fasilitas' && !item.detailFasilitas));
+    setFilterFasilitas('Semua');
+    setFilterStatusFasilitas('Semua');
+    setPesan('Seluruh isi tabel laporan fasilitas berhasil direset.');
+  }
+
+  function tombolHapus(item) {
+    return (
+      <button
+        className="rounded bg-red-100 px-3 py-2 text-sm font-semibold text-red-800 hover:bg-red-200"
+        type="button"
+        aria-label={`Hapus laporan ${item.id}`}
+        onClick={() => hapusLaporan(item.id)}
+      >
+        Hapus
+      </button>
+    );
   }
 
   function pilihanStatus(item) {
@@ -91,12 +127,20 @@ export default function Laporan({ laporan, setLaporan, fasilitas = [] }) {
     setFormTerbuka(false);
   }
 
-  const laporanFasilitas = urutkanLaporanTerbaru(
+  const semuaLaporanFasilitas = urutkanLaporanTerbaru(
     laporan.filter((item) => item.jenisLaporan === 'Fasilitas' || item.detailFasilitas),
   );
-  const laporanLingkungan = urutkanLaporanTerbaru(
+  const semuaLaporanLingkungan = urutkanLaporanTerbaru(
     laporan.filter((item) => item.jenisLaporan !== 'Fasilitas' && !item.detailFasilitas),
   );
+  const laporanLingkungan = semuaLaporanLingkungan.filter((item) => (
+    (filterKategoriLingkungan === 'Semua' || item.kategori === filterKategoriLingkungan)
+    && (filterStatusLingkungan === 'Semua' || item.status === filterStatusLingkungan)
+  ));
+  const laporanFasilitas = semuaLaporanFasilitas.filter((item) => (
+    (filterFasilitas === 'Semua' || item.detailFasilitas?.fasilitasId === filterFasilitas)
+    && (filterStatusFasilitas === 'Semua' || item.status === filterStatusFasilitas)
+  ));
 
   const barisLingkungan = laporanLingkungan.map((item) => [
     item.id,
@@ -107,6 +151,7 @@ export default function Laporan({ laporan, setLaporan, fasilitas = [] }) {
     item.pengukuran?.phTanah ?? '—',
     item.deskripsi || '—',
     pilihanStatus(item),
+    tombolHapus(item),
   ]);
 
   const barisFasilitas = laporanFasilitas.map((item) => [
@@ -119,6 +164,7 @@ export default function Laporan({ laporan, setLaporan, fasilitas = [] }) {
     item.detailFasilitas?.suhuPendingin ?? '—',
     item.deskripsi || '—',
     pilihanStatus(item),
+    tombolHapus(item),
   ]);
 
   return (
@@ -214,12 +260,39 @@ export default function Laporan({ laporan, setLaporan, fasilitas = [] }) {
 
       <section>
         <h2 className="mb-5 text-2xl font-bold text-blue-950">Riwayat Laporan Lingkungan</h2>
-        <Tabel kolom={['ID', 'Kategori', 'Tanggal', 'PM2.5', 'pH Air', 'pH Tanah', 'Aktivitas', 'Status Tinjauan']} data={barisLingkungan} />
+        <div className="mb-4 flex flex-wrap items-end gap-4 rounded border border-slate-200 bg-white p-4">
+          <label className="text-sm font-semibold">Kategori
+            <select className={gayaInput} value={filterKategoriLingkungan} onChange={(event) => setFilterKategoriLingkungan(event.target.value)}>
+              <option>Semua</option><option>Kualitas Udara</option><option>Kualitas Air</option><option>Kualitas Tanah</option>
+            </select>
+          </label>
+          <label className="text-sm font-semibold">Status Tinjauan
+            <select className={gayaInput} value={filterStatusLingkungan} onChange={(event) => setFilterStatusLingkungan(event.target.value)}>
+              <option>Semua</option><option>Menunggu Tinjauan</option><option>Ditinjau</option>
+            </select>
+          </label>
+          <button className="rounded border border-slate-300 px-4 py-3 text-sm font-semibold" type="button" onClick={resetTabelLingkungan}>Reset Tabel</button>
+        </div>
+        <Tabel kolom={['ID', 'Kategori', 'Tanggal', 'PM2.5', 'pH Air', 'pH Tanah', 'Aktivitas', 'Status Tinjauan', 'Aksi']} data={barisLingkungan} />
       </section>
 
       <section>
         <h2 className="mb-5 text-2xl font-bold text-blue-950">Riwayat Laporan Fasilitas</h2>
-        <Tabel kolom={['ID', 'ID Fasilitas', 'Nama Fasilitas', 'Tanggal', 'Status Operasional', 'Daya (MW)', 'Suhu Pendingin (°C)', 'Deskripsi', 'Status Tinjauan']} data={barisFasilitas} />
+        <div className="mb-4 flex flex-wrap items-end gap-4 rounded border border-slate-200 bg-white p-4">
+          <label className="text-sm font-semibold">Fasilitas
+            <select className={gayaInput} value={filterFasilitas} onChange={(event) => setFilterFasilitas(event.target.value)}>
+              <option value="Semua">Semua</option>
+              {fasilitas.map((item) => <option key={item.id} value={item.id}>{item.id} — {item.nama}</option>)}
+            </select>
+          </label>
+          <label className="text-sm font-semibold">Status Tinjauan
+            <select className={gayaInput} value={filterStatusFasilitas} onChange={(event) => setFilterStatusFasilitas(event.target.value)}>
+              <option>Semua</option><option>Menunggu Tinjauan</option><option>Ditinjau</option>
+            </select>
+          </label>
+          <button className="rounded border border-slate-300 px-4 py-3 text-sm font-semibold" type="button" onClick={resetTabelFasilitas}>Reset Tabel</button>
+        </div>
+        <Tabel kolom={['ID', 'ID Fasilitas', 'Nama Fasilitas', 'Tanggal', 'Status Operasional', 'Daya (MW)', 'Suhu Pendingin (°C)', 'Deskripsi', 'Status Tinjauan', 'Aksi']} data={barisFasilitas} />
       </section>
     </>
   );

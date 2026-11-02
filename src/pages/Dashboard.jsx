@@ -1,10 +1,14 @@
 import { useState } from 'react';
 import StatCard from '../components/StatCard';
 import Tabel from '../components/Tabel';
+import { kelasStatusFasilitas } from '../utils/statusFasilitas';
 
 export default function Dashboard({ fasilitas, pemantauan, laporan, pindahHalaman }) {
   const [kataKunci, setKataKunci] = useState('');
   const [sudahMencari, setSudahMencari] = useState(false);
+
+  // Data pemantauan yang diterima di sini sudah difilter ke laporan yang ditinjau.
+  const variabelTerpantau = new Set(pemantauan.map((item) => item.parameter).filter(Boolean));
 
   // Cari fasilitas berdasarkan nama, ID, atau lokasi.
   const hasilPencarian = fasilitas.filter((item) => {
@@ -12,14 +16,14 @@ export default function Dashboard({ fasilitas, pemantauan, laporan, pindahHalama
     return informasi.includes(kataKunci.toLowerCase());
   });
 
-  const ringkasanFasilitas = [
-    ['Nama Fasilitas', 'PLTN Edukasi Nusantara'],
-    ['ID Fasilitas', 'SEN-001'],
-    ['Status', 'Beroperasi (simulasi)'],
-    ['Daya Keluaran', '850 MW (simulasi)'],
-    ['Suhu Pendingin', '295 °C (simulasi)'],
-    ['Waktu Pembaruan', '27 September 2026, 20.00 WIB (simulasi)'],
-  ];
+  const ringkasanFasilitas = fasilitas.map((item) => [
+    item.id,
+    item.nama,
+    item.lokasi,
+    item.kapasitas,
+    item.suhuPendingin != null ? `${item.suhuPendingin} °C` : '—',
+    <span className={`inline-block rounded px-3 py-1 text-sm font-semibold ${kelasStatusFasilitas(item.status)}`}>{item.status}</span>,
+  ]);
 
   function cariFasilitas(event) {
     event.preventDefault();
@@ -97,16 +101,21 @@ export default function Dashboard({ fasilitas, pemantauan, laporan, pindahHalama
 
       <section>
         <h2 className="mb-5 text-2xl font-bold text-blue-950">Ringkasan Sistem</h2>
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard judul="Total Fasilitas" nilai={fasilitas.length} />
           <StatCard judul="Data Pemantauan" nilai={pemantauan.length} />
+          <StatCard judul="Variabel Terpantau" nilai={variabelTerpantau.size} />
           <StatCard judul="Total Laporan" nilai={laporan.length} />
         </div>
       </section>
 
       <section>
         <h2 className="mb-5 text-2xl font-bold text-blue-950">Informasi Fasilitas</h2>
-        <Tabel kolom={['Informasi', 'Nilai Simulasi']} data={ringkasanFasilitas} />
+        {fasilitas.length > 0 ? (
+          <Tabel kolom={['ID Fasilitas', 'Nama', 'Lokasi', 'Daya Keluaran', 'Suhu Pendingin', 'Status Operasional']} data={ringkasanFasilitas} />
+        ) : (
+          <p className="rounded border border-slate-200 bg-white p-5 text-slate-600">Belum ada laporan fasilitas yang ditinjau.</p>
+        )}
       </section>
 
       <section>

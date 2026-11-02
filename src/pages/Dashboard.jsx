@@ -17,13 +17,12 @@ export default function Dashboard({ fasilitas, pemantauan, laporan, pindahHalama
   });
 
   const ringkasanFasilitas = fasilitas.map((item) => [
-    `${item.nama} (${item.id})`,
-    <div className="space-y-2">
-      <span className={`inline-block rounded px-3 py-1 text-sm font-semibold ${kelasStatusFasilitas(item.status)}`}>{item.status}</span>
-      <p>Daya keluaran: {item.kapasitas}</p>
-      <p>Suhu pendingin: {item.suhuPendingin != null ? `${item.suhuPendingin} °C` : 'Belum dilaporkan'}</p>
-      {item.deskripsiPembaruan && <p>Laporan terakhir: {item.deskripsiPembaruan}</p>}
-    </div>,
+    item.id,
+    item.nama,
+    item.lokasi,
+    item.kapasitas,
+    item.suhuPendingin != null ? `${item.suhuPendingin} °C` : '—',
+    <span className={`inline-block rounded px-3 py-1 text-sm font-semibold ${kelasStatusFasilitas(item.status)}`}>{item.status}</span>,
   ]);
 
   function cariFasilitas(event) {
@@ -112,7 +111,11 @@ export default function Dashboard({ fasilitas, pemantauan, laporan, pindahHalama
 
       <section>
         <h2 className="mb-5 text-2xl font-bold text-blue-950">Informasi Fasilitas</h2>
-        <Tabel kolom={['Informasi', 'Nilai Terbaru']} data={ringkasanFasilitas} />
+        {fasilitas.length > 0 ? (
+          <Tabel kolom={['ID Fasilitas', 'Nama', 'Lokasi', 'Daya Keluaran', 'Suhu Pendingin', 'Status Operasional']} data={ringkasanFasilitas} />
+        ) : (
+          <p className="rounded border border-slate-200 bg-white p-5 text-slate-600">Belum ada laporan fasilitas yang ditinjau.</p>
+        )}
       </section>
 
       <section>

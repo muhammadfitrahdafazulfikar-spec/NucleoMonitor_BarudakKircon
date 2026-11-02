@@ -80,7 +80,7 @@ export default function App() {
     }
 
     if (halaman === 'Pemantauan Lingkungan') {
-      return <Pemantauan pemantauan={dataPemantauan} laporan={laporan} />;
+      return <Pemantauan pemantauan={dataPemantauan} />;
     }
 
     if (halaman === 'Laporan Pemantauan') {

@@ -168,9 +168,9 @@ export default function Laporan({ laporan, setLaporan, fasilitas = [] }) {
                   </label>
                   <div className="rounded border border-slate-200 p-4 md:col-span-2">
                     <h3 className="font-bold text-blue-950">Nilai mentah lingkungan</h3>
-                    <p className="mt-1 text-sm text-slate-600">Isi satu atau beberapa nilai. Deskripsi laporan akan menjadi aktivitas pada data pemantauan.</p>
+                    <p className="mt-1 text-sm text-slate-600">Isi satu atau beberapa nilai. Untuk perhitungan ISPU, nilai PM2.5 perlu berupa rata-rata 24 jam. Deskripsi laporan menjadi aktivitas pada data pemantauan.</p>
                     <div className="mt-4 grid gap-4 md:grid-cols-3">
-                      <label className="text-sm font-semibold">PM2.5 udara (µg/m³)<input className={gayaInput} name="pm25" type="number" min="0" step="any" placeholder="Contoh: 12" /></label>
+                      <label className="text-sm font-semibold">PM2.5 udara, rata-rata 24 jam (µg/m³)<input className={gayaInput} name="pm25" type="number" min="0" step="any" placeholder="Contoh: 12" /></label>
                       <label className="text-sm font-semibold">pH air<input className={gayaInput} name="phAir" type="number" min="0" max="14" step="any" placeholder="Contoh: 7.2" /></label>
                       <label className="text-sm font-semibold">pH tanah<input className={gayaInput} name="phTanah" type="number" min="0" max="14" step="any" placeholder="Contoh: 6.5" /></label>
                     </div>

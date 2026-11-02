@@ -2,6 +2,7 @@ import denahFasilitas from '../assets/DENAH_FASILITAS.png';
 import fotoFasilitas1 from '../assets/card1.jpg';
 import fotoFasilitas2 from '../assets/card2.jpg';
 import fotoFasilitas3 from '../assets/card3.jpg';
+import { kelasStatusFasilitas } from '../utils/statusFasilitas';
 
 const fotoKartu = [fotoFasilitas1, fotoFasilitas2, fotoFasilitas3];
 
@@ -29,7 +30,10 @@ export default function Fasilitas({ fasilitas = [], fasilitasDitinjau = [] }) {
               <p className="mt-3 text-slate-600">Lokasi: {item.lokasi}</p>
               <p className="mt-1 text-slate-600">Daya keluaran: {item.kapasitas}</p>
               <p className="mt-1 text-slate-600">Suhu pendingin: {item.suhuPendingin != null ? `${item.suhuPendingin} °C` : 'Belum dilaporkan'}</p>
-              <p className="mt-3 font-semibold text-slate-800">Status: {item.status}</p>
+              <div className="mt-3 flex items-center gap-2">
+                <span className="font-semibold text-slate-800">Status:</span>
+                <span className={`rounded px-3 py-1 text-sm font-semibold ${kelasStatusFasilitas(item.status)}`}>{item.status}</span>
+              </div>
               {item.deskripsiPembaruan && <p className="mt-2 text-sm text-slate-600">Laporan terakhir: {item.deskripsiPembaruan}</p>}
             </div>
           </article>
@@ -65,7 +69,7 @@ export default function Fasilitas({ fasilitas = [], fasilitasDitinjau = [] }) {
                   <td className="px-4 py-3">{item.lokasi}</td>
                   <td className="px-4 py-3">{item.kapasitas}</td>
                   <td className="px-4 py-3">{item.suhuPendingin != null ? `${item.suhuPendingin} °C` : '—'}</td>
-                  <td className="px-4 py-3">{item.status}</td>
+                  <td className="px-4 py-3"><span className={`rounded px-3 py-1 text-sm font-semibold ${kelasStatusFasilitas(item.status)}`}>{item.status}</span></td>
                   <td className="px-4 py-3">Ditinjau</td>
                   <td className="px-4 py-3">{item.deskripsiPembaruan || item.waktuPembaruan || '—'}</td>
                 </tr>

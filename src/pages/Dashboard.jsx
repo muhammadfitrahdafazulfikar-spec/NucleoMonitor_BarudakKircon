@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import StatCard from '../components/StatCard';
 import Tabel from '../components/Tabel';
+import { kelasStatusFasilitas } from '../utils/statusFasilitas';
 
 export default function Dashboard({ fasilitas, pemantauan, laporan, pindahHalaman }) {
   const [kataKunci, setKataKunci] = useState('');
@@ -17,12 +18,12 @@ export default function Dashboard({ fasilitas, pemantauan, laporan, pindahHalama
 
   const ringkasanFasilitas = fasilitas.map((item) => [
     `${item.nama} (${item.id})`,
-    [
-      `Status: ${item.status}`,
-      `Daya keluaran: ${item.kapasitas}`,
-      `Suhu pendingin: ${item.suhuPendingin != null ? `${item.suhuPendingin} °C` : 'Belum dilaporkan'}`,
-      item.deskripsiPembaruan ? `Laporan terakhir: ${item.deskripsiPembaruan}` : null,
-    ].filter(Boolean).join(' · '),
+    <div className="space-y-2">
+      <span className={`inline-block rounded px-3 py-1 text-sm font-semibold ${kelasStatusFasilitas(item.status)}`}>{item.status}</span>
+      <p>Daya keluaran: {item.kapasitas}</p>
+      <p>Suhu pendingin: {item.suhuPendingin != null ? `${item.suhuPendingin} °C` : 'Belum dilaporkan'}</p>
+      {item.deskripsiPembaruan && <p>Laporan terakhir: {item.deskripsiPembaruan}</p>}
+    </div>,
   ]);
 
   function cariFasilitas(event) {

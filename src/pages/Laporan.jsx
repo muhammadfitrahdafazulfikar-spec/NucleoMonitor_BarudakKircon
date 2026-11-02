@@ -4,6 +4,7 @@ import PageTitle from '../components/PageTitle';
 import StatCard from '../components/StatCard';
 import Tabel from '../components/Tabel';
 import { urutkanLaporanTerbaru } from '../utils/tanggalLaporan';
+import { kelasStatusFasilitas } from '../utils/statusFasilitas';
 
 const gayaInput = 'mt-2 block w-full rounded border border-slate-300 px-3 py-3 outline-none focus:border-sky-600';
 
@@ -159,7 +160,9 @@ export default function Laporan({ laporan, setLaporan, fasilitas = [] }) {
     item.detailFasilitas?.fasilitasId ?? '—',
     item.detailFasilitas?.namaFasilitas ?? '—',
     item.tanggal,
-    item.detailFasilitas?.statusOperasional ?? '—',
+    item.detailFasilitas?.statusOperasional
+      ? <span className={`rounded px-3 py-1 text-sm font-semibold ${kelasStatusFasilitas(item.detailFasilitas.statusOperasional)}`}>{item.detailFasilitas.statusOperasional}</span>
+      : '—',
     item.detailFasilitas?.dayaKeluaran ?? '—',
     item.detailFasilitas?.suhuPendingin ?? '—',
     item.deskripsi || '—',
@@ -244,7 +247,7 @@ export default function Laporan({ laporan, setLaporan, fasilitas = [] }) {
                     </select>
                   </label>
                   <label className="font-semibold">Status Operasional
-                    <select className={gayaInput} name="statusOperasional" required defaultValue="Beroperasi"><option>Beroperasi</option><option>Pemeliharaan</option><option>Tidak Aktif</option></select>
+                    <select className={gayaInput} name="statusOperasional" required defaultValue="Beroperasi"><option>Beroperasi</option><option>Pemeliharaan</option><option>Kerusakan</option><option>Tidak Aktif</option></select>
                   </label>
                   <label className="font-semibold">Daya Keluaran (MW)<input className={gayaInput} name="dayaKeluaran" type="number" min="0" step="any" placeholder="Contoh: 850" /></label>
                   <label className="font-semibold">Suhu Pendingin (°C)<input className={gayaInput} name="suhuPendingin" type="number" min="0" step="any" placeholder="Contoh: 295" /></label>

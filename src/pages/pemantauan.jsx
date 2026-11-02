@@ -63,7 +63,7 @@ function hitungStatus(item) {
 
 function warnaStatus(status) {
   if (status === 'Aman') return 'bg-green-100 text-green-800';
-  if (status === 'Waspada') return 'bg-amber-100 text-amber-800';
+  if (status === 'Waspada') return 'bg-orange-100 text-orange-800';
   if (status === 'Bahaya') return 'bg-red-100 text-red-800';
   return 'bg-slate-100 text-slate-700';
 }

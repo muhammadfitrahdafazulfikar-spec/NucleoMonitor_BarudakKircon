@@ -1,5 +1,5 @@
 // Halaman pemantauan mengubah angka laporan menjadi status simulasi.
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import PageTitle from '../components/PageTitle';
 import Tabel from '../components/Tabel';
 
@@ -44,9 +44,34 @@ function warnaStatus(status) {
 
 export default function Pemantauan({ pemantauan, laporan = [] }) {
   const [filter, setFilter] = useState('Semua');
+  const [dataApi, setDataApi] = useState([]);
+  const [statusApi, setStatusApi] = useState('memuat');
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch('https://jsonplaceholder.typicode.com/comments?_limit=5', { signal: controller.signal })
+      .then((response) => {
+        if (!response.ok) throw new Error('Permintaan data pemantauan gagal.');
+        return response.json();
+      })
+      .then((comments) => {
+        setDataApi(comments.map((comment, index) => ({
+          id: `API-${String(comment.id).padStart(3, '0')}`,
+          jenis: ['Udara', 'Air', 'Tanah'][index % 3],
+          parameter: ['PM2.5', 'pH air', 'pH tanah'][index % 3],
+          nilai: 'Data contoh',
+          aktivitas: comment.name,
+        })));
+        setStatusApi('selesai');
+      })
+      .catch((error) => {
+        if (error.name !== 'AbortError') setStatusApi('gagal');
+      });
+    return () => controller.abort();
+  }, []);
 
   // Filter tabel pemantauan yang sudah ada.
-  const dataTampil = pemantauan.filter((item) => filter === 'Semua' || item.jenis === filter);
+  const dataTampil = [...dataApi, ...pemantauan].filter((item) => filter === 'Semua' || item.jenis === filter);
   const barisTabel = dataTampil.map((item, index) => [
     index + 1, item.id, item.jenis, item.parameter, item.nilai, item.aktivitas,
   ]);
@@ -117,6 +142,8 @@ export default function Pemantauan({ pemantauan, laporan = [] }) {
             </select>
           </label>
         </div>
+        {statusApi === 'memuat' && <p className="mb-3 text-sm text-slate-600" role="status">Memuat data contoh dari JSONPlaceholder…</p>}
+        {statusApi === 'gagal' && <p className="mb-3 text-sm text-amber-800" role="status">Data JSONPlaceholder tidak dapat dimuat. Data pemantauan lokal tetap ditampilkan.</p>}
         <Tabel kolom={['No.', 'ID Data', 'Jenis', 'Parameter', 'Nilai', 'Aktivitas']} data={barisTabel} />
       </section>
 
